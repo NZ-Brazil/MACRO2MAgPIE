@@ -5,8 +5,8 @@ período) e produz dois relatórios agregados:
 
 1. **`flows_summary.csv`** — soma do valor de todas as commodities, por ano.
 2. **`flows_summary_biomass.csv`** — apenas os feedstocks de biomassa, em
-   **base úmida (as-harvested)** e já somados à demanda de madeira do modelo
-   **EP** (Energy Planning), para uso como entrada no **MAgPIE**.
+   **base úmida (as-harvested)** e já somados à demanda de lenha (`firewood`) do
+   modelo **EP** (Energy Planning), para uso como entrada no **MAgPIE**.
 
 Este README documenta o funcionamento do script para facilitar sua integração
 como um passo de pipeline na plataforma do NZB (Net Zero Brasil).
@@ -42,10 +42,10 @@ Em seguida, a partir dessa tabela:
    As demais colunas de biomassa (Corn, Macauba, RiceStraw, Soybean,
    Sugarcane) já chegam do MACRO em base úmida e são usadas como estão, sem
    conversão.
-8. Lê os arquivos de demanda de madeira do EP (`EP_DEMAND_FILES`) e soma por
-   ano. Os valores do EP já vêm em base úmida e são usados como estão, sem
-   conversão.
-9. Soma a demanda de madeira do EP (base úmida) à coluna `Biomass_wood` (base
+8. Lê os arquivos de demanda de lenha (`firewood`) do EP
+   (`EP_DEMAND_FILES`) e soma por ano. Os valores do EP já vêm em base úmida e
+   são usados como estão, sem conversão.
+9. Soma a demanda de lenha do EP (base úmida) à coluna `Biomass_wood` (base
    úmida, já convertida no passo 7), linha a linha, por ano.
 10. Salva `flows_summary_biomass.csv`, com todas as colunas em base úmida.
 
@@ -79,7 +79,7 @@ feita editando as variáveis no topo do arquivo (seção `CONFIGURATION`).
 | `OUTPUT_FILE_BIOMASS` | Nome do CSV de saída (só biomassa, base úmida) | Idem. |
 | `BIOMASS_FEEDSTOCKS` | Lista dos feedstocks tratados como biomassa | Define também a ordem das colunas na tabela final. |
 | `CHUNK_SIZE` | Tamanho do chunk de leitura do `flows.csv` | Ajustar conforme memória disponível / tamanho dos arquivos. |
-| `EP_DEMAND_FILES` | Lista de caminhos para os arquivos de demanda de madeira do EP (`charcoal_mass`, `firewood_mass`) | **Vazia por padrão** — se vazia, a demanda do EP é tratada como 0 e um aviso é impresso. Aceita `.csv`, `.xlsx`, `.xls`. Os valores já vêm em base úmida e são usados sem conversão. |
+| `EP_DEMAND_FILES` | Lista de caminhos para os arquivos de demanda de lenha do EP (`firewood_mass`) | **Vazia por padrão** — se vazia, a demanda do EP é tratada como 0 e uma mensagem informativa é impressa. Aceita `.csv`, `.xlsx`, `.xls`. Os valores já vêm em base úmida e são usados sem conversão. |
 | `EP_DEMAND_FEEDSTOCK` | A qual feedstock de `BIOMASS_FEEDSTOCKS` a demanda do EP deve ser somada | Precisa bater exatamente (case-sensitive) com um nome em `BIOMASS_FEEDSTOCKS`. Há uma validação no início do script que já barra valores inválidos. |
 | `WOOD_MOISTURE_CONTENT` | Teor de umidade (as-harvested) da madeira, usado **só** para converter a coluna `Biomass_wood` do MACRO de base seca para base úmida (`wet = dry / (1 - WOOD_MOISTURE_CONTENT)`) | Valor atual: `0.51` (mesma figura usada anteriormente como `EP_MOISTURE_CONTENT`). Só se aplica à madeira do MACRO — os demais feedstocks de biomassa não passam por nenhuma conversão de umidade, pois já chegam em base úmida. |
 
@@ -98,7 +98,7 @@ feita editando as variáveis no topo do arquivo (seção `CONFIGURATION`).
 | coluna | descrição |
 |---|---|
 | `year` | ano do período |
-| uma coluna por item de `BIOMASS_FEEDSTOCKS` | valor em **base úmida**; para `Biomass_wood`, já é a soma da madeira do MACRO (convertida de base seca para úmida) com a demanda de madeira do EP (já em base úmida) |
+| uma coluna por item de `BIOMASS_FEEDSTOCKS` | valor em **base úmida**; para `Biomass_wood`, já é a soma da madeira do MACRO (convertida de base seca para úmida) com a demanda de lenha (`firewood`) do EP (já em base úmida) |
 
 Todos os valores de biomassa são convertidos para módulo (`abs()`) antes de
 qualquer conversão de umidade, pois o MACRO reporta consumo como valor
@@ -183,10 +183,11 @@ as duas tabelas finais impressas antes do tempo total de execução.
 
 ## 8. Histórico de mudanças
 
+- **2026-08-28**: a demanda adicional de madeira proveniente do EP foi simplificada para considerar apenas o arquivo de lenha (`firewood_mass`). A soma à coluna `Biomass_wood` continua sendo feita por ano e em base úmida.
 - **2026-08-14**: saída de `flows_summary_biomass.csv` passou de base seca
   para **base úmida**. A madeira do MACRO (que vem em base seca) agora é
   convertida para base úmida via `WOOD_MOISTURE_CONTENT` antes de ser somada
-  à demanda de madeira do EP (que já era, e continua sendo, em base úmida).
+  à demanda de lenha (`firewood`) do EP (que já era, e continua sendo, em base úmida).
   Os demais feedstocks de biomassa deixaram de ser convertidos para base
   seca — permanecem como reportados pelo MACRO (base úmida). As variáveis
   `MOISTURE_CONTENT`, `PLACEHOLDER_MOISTURE_CONTENT`, `EP_MOISTURE_CONTENT` e
