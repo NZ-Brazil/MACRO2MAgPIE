@@ -41,12 +41,11 @@ CHUNK_SIZE = 500_000
 
 # EP wood demand
 
-# One entry per EP file (charcoal_mass and firewood_mass are separate files).
-# Both are already expressed as WOOD mass, on a wet (as-harvested) basis -
-# used as-is below, no moisture conversion needed.
+# EP wood demand files to be added to MACRO biomass results.
+# Firewood values are already expressed as WOOD mass, on a wet
+# (as-harvested) basis, so no moisture conversion is needed.
 # .csv, .xlsx and .xls are all accepted.
 EP_DEMAND_FILES = [
-    # r"C:\Users\rache\OneDrive\Área de Trabalho\S0\S0\S0\EP2MACRO\EXO_DEMAND\charcoal mass_S0.csv",
     # r"C:\Users\rache\OneDrive\Área de Trabalho\S0\S0\S0\EP2MACRO\EXO_DEMAND\firewood mass_S0.csv",
 ]
 
@@ -151,10 +150,11 @@ def _sheet_to_year_totals(df: pd.DataFrame, label: str) -> pd.Series:
 def load_ep_wood_demand() -> pd.Series:
     """Return total EP wood demand per year, on a wet (as-harvested) basis.
 
-    Reads every file in EP_DEMAND_FILES (charcoal_mass and firewood_mass live in
-    separate files), sums over all Brazilian regions within each file, and adds
-    the files together year by year. EP's figures already arrive on a wet
-    basis, so no moisture conversion is applied here."""
+    Reads every file listed in EP_DEMAND_FILES, sums over all Brazilian
+    regions within each file, and adds the files together year by year.
+    EP figures already arrive on a wet basis, so no moisture conversion
+    is applied here.
+    """
     if not EP_DEMAND_FILES:
         print("[INFO] EP_DEMAND_FILES is empty - EP wood demand treated as 0 for all years.")
         return pd.Series(dtype=float)
@@ -164,6 +164,7 @@ def load_ep_wood_demand() -> pd.Series:
 
     for entry in EP_DEMAND_FILES:
         ep_path = Path(entry)
+
         if not ep_path.is_file():
             print(f"[WARNING] EP demand file not found: {ep_path} - skipped.")
             continue
